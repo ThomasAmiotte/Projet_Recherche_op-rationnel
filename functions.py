@@ -11,6 +11,7 @@ def read_file(file_name):
 def afficher_matrice_couts(tableau):
     lignes_intermediaires = tableau[1:-1]
     matrice_couts = [ligne[:-1] for ligne in lignes_intermediaires]
+    print("Voici la matrice des couts")
     for ligne in matrice_couts:
         print(ligne)
     return matrice_couts
@@ -20,13 +21,10 @@ def afficher_matrice_couts(tableau):
 def afficher_offre(tableau):
     lignes_intermediaires = tableau[1:-1]
     offre = [ligne[-1] for ligne in lignes_intermediaires]
-    for ligne in offre:
-        print(ligne)
     return offre
 #2.Extraction des demandes
 def afficher_demande(tableau):
     demande = tableau[-1]
-    print(demande)
     return demande
 #NORD OUEST
 def coin_nord_ouest(offres, demandes, couts):
@@ -51,5 +49,34 @@ def coin_nord_ouest(offres, demandes, couts):
             i += 1
         if demandes[j] == 0:
             j += 1
-
+    print("Voici la proposition NORD OUEST :")
     return solution
+
+def balas_hammer(offres, demandes, couts):
+    #extraction de chaque ligne
+    for ligne in couts:
+        print(ligne)
+    #extraction de chaque colonne
+    colonnes = [list(colonne) for colonne in zip(*couts)]
+    for colonne in colonnes:
+        print(colonne)
+    #Collecter les pénalités pour toutes les colonnes
+    penalites_colonnes  = []
+    mins_col = [sorted(colonne)[:2] for colonne in colonnes]
+    for i, mins in enumerate(mins_col):
+        penalite_colonne = mins[1] - mins[0]
+        print(f"Les deux minimum de la colonne sont", mins)
+        print("La penalyté sur cette colonne est de ", mins[1] - mins[0])
+        penalites_colonnes.append((penalite_colonne, 'colonne', i))
+    lines = [line for line in couts]
+    penalites_lignes = []
+    mins_line = [sorted(line)[:2] for line in lines]
+    for i, mins in enumerate(mins_line):
+        penalite_ligne = mins[1] - mins[0]
+        print(f"Les deux minimum de la ligne sont", mins)
+        print("La penalyté sur cette ligne est de ", mins[1] - mins[0])
+        penalites_lignes.append((penalite_ligne, 'ligne', i))
+    #Trouver la penalité la plus élevé
+    all_penalities = penalites_lignes + penalites_colonnes
+    penalite_max = max(all_penalities, key=lambda x: x[0])
+    print("La penalite max est ", penalite_max)
