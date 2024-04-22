@@ -1,4 +1,7 @@
 #Lecture des données issues du fichier .txt et son stockage en mémoire
+from tabulate import tabulate
+from collections import deque
+
 def read_file(file_name):
     tableau = []
     with open(file_name, 'r') as f:
@@ -12,8 +15,7 @@ def afficher_matrice_couts(tableau):
     lignes_intermediaires = tableau[1:-1]
     matrice_couts = [ligne[:-1] for ligne in lignes_intermediaires]
     print("Voici la matrice des couts")
-    for ligne in matrice_couts:
-        print(ligne)
+    print(tabulate(matrice_couts, tablefmt='grid'))
     return matrice_couts
 
 #Proposition de transport (Nord-Ouest)
@@ -50,6 +52,7 @@ def coin_nord_ouest(offres, demandes, couts):
         if demandes[j] == 0:
             j += 1
     print("Voici la proposition NORD OUEST :")
+    print(tabulate(solution, tablefmt='grid'))
     return solution
 
 def balas_hammer(offres, demandes, couts):
@@ -80,3 +83,72 @@ def balas_hammer(offres, demandes, couts):
     all_penalities = penalites_lignes + penalites_colonnes
     penalite_max = max(all_penalities, key=lambda x: x[0])
     print("La penalite max est ", penalite_max)
+
+    #Initialisation de la solution de transport
+    solution = [[0] * len(demandes) for _ in range(len(offres))]
+    type_max, index_max = penalite_max[1], penalite_max[2]
+
+    #Trouvons l'élément avec le coût minimum dans la ligne ou la colonne sélectionnée
+    if type_max == 'ligne':
+        min_cost_index = ligne.index(min(ligne))
+        #Quantité maximale permise
+        quantite = min(offres[index_max], demandes[min_cost_index])
+        solution[index_max][min_cost_index] = quantite
+        offres[index_max] -= quantite
+        demandes[index_max] -= quantite
+    else:
+        min_cost_index = colonne.index(min(colonne))
+        quantite = min(offres[min_cost_index], demandes[index_max])
+        solution[min_cost_index][index_max] = quantite
+        demandes[min_cost_index] -= quantite
+        offres[min_cost_index] -= quantite
+    #Afficher la matrice
+    print("La matrice des couts après balas-hammer")
+    print(tabulate(solution, tablefmt='grid'))
+    return solution
+
+def calcul_cout_total(couts, solution):
+    total = 0
+    for i in range(len(solution)):
+        for j in range(len(solution[i])):
+            total += solution[i][j] * couts[i][j]
+    return total
+
+#Savoir si la proposition est acyclique ou non
+
+def iscycle(graph):
+    visited = set() #Un set pour sotcké les noeuds visités
+    parent = {} #Dictionnaire pour garder une trace des parents des sommets
+
+    #Fonction de parcours en largeur
+    def bfs(start):
+        queue = deque([start])
+        visited.add(start)
+        parent[start] = None #Le sommet de départ n'a pas de parent
+        while queue:
+            current = queue.popleft()
+            for neighbor in graph[current]:
+                if neighbor not in visited:
+                    queue.append(neighbor)
+                    parent[neighbor] = current
+                    queue.append(neighbor)
+                elif parent[current] != neighbor:
+                    #Un cycle a été détécté
+                    return True, current, neighbor
+        return False, None, None
+
+
+def find_cycle(start,end,parent):
+    cycle = []
+    cycle.append(start)
+    while start != end:
+        start = parent[start]
+        cycle.append(start)
+        cycle.append(end)
+        cycle.reverse()
+        return cycle
+has_cycle, cycle = detect_cycle(graph)
+if has_cycle:
+    print("Cycle detected:", cycle)
+else:
+    print("No cycle detected")
