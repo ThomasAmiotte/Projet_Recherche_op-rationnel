@@ -23,10 +23,13 @@ while True:
         print("Entrée invalide. Veuillez choisir entre 1 et 2.\n")
 """
 from functions import *
-tableau = read_file("tableau/table8.txt")
+tableau = read_file("tableau/table1.txt")
 couts = afficher_matrice_couts(tableau)
-print("d")
+print("Voici les offres")
 offres = afficher_offre(tableau)
+print(offres)
+print("Voici les demandes")
 demandes = afficher_demande(tableau)
-
+print(demandes)
+print("Voici la proposition apres Balas-Hammer")
 balas_hammer(offres, demandes, couts)
