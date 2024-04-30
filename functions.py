@@ -54,134 +54,91 @@ def coin_nord_ouest(offres, demandes, couts):
     print("Voici la proposition NORD OUEST :")
     print(tabulate(solution, tablefmt='grid'))
     return solution
-
-def balas_hammer(offres, demandes, couts):
-    #extraction de chaque ligne
-    for ligne in couts:
-        print(ligne)
-    #extraction de chaque colonne
+def extract_rows_and_columns(couts):
+    lignes = couts
     colonnes = [list(colonne) for colonne in zip(*couts)]
-    for colonne in colonnes:
-        print(colonne)
-    #Collecter les pénalités pour toutes les colonnes
-    penalites_colonnes  = []
-    mins_col = [sorted(colonne)[:2] for colonne in colonnes]
-    for i, mins in enumerate(mins_col):
-        penalite_colonne = mins[1] - mins[0]
-        print(f"Les deux minimum de la colonne {i} sont", mins)
-        print("La penalyté sur cette colonne est de ", mins[1] - mins[0])
-        penalites_colonnes.append((penalite_colonne, 'colonne', i))
-    lines = [line for line in couts]
-    penalites_lignes = []
-    mins_line = [sorted(line)[:2] for line in lines]
-    for i, mins in enumerate(mins_line):
-        penalite_ligne = mins[1] - mins[0]
-        print(f"Les deux minimum de la ligne {i} sont", mins)
-        print("La penalyté sur cette ligne est de ", mins[1] - mins[0])
-        penalites_lignes.append((penalite_ligne, 'ligne', i))
-    #Trouver la penalité la plus élevé
+    return lignes, colonnes
+
+def calculate_penalties(couts, lignes, colonnes):
+    penalites_lignes = [(sorted(line)[1] - sorted(line)[0], 'ligne', i) for i, line in enumerate(lignes)]
+    penalites_colonnes = [(sorted(col)[1] - sorted(col)[0], 'colonne', i) for i, col in enumerate(colonnes)]
     all_penalities = penalites_lignes + penalites_colonnes
-    penalite_max = max(all_penalities, key=lambda x: x[0])
-    # Compter combien de fois la pénalité maximale apparaît
-    count_max = sum(1 for x in all_penalities if x[0] == penalite_max[0])
-    print("La penalite max est ", penalite_max)
-    # Vérifier s'il y a 2 ou plus d'occurrences de cette pénalité maximale
-    print(all_penalities)
-    if count_max >= 2:
-        min_cost_index = None
-        min_cost_value = float('inf')
-        print("Il y a", count_max, "pénalités avec la valeur maximale, alors on choisi la ligne ou colonne avec le plus petit cout")
-        # Parcourir la liste des pénalités
-        for penalite in all_penalities:
-            if penalite[0] == penalite_max[0]:  # Vérifier si la pénalité correspond à la pénalité maximale
-                type_penalite, index_penalite = penalite[1], penalite[2]  # Récupérer le type (ligne ou colonne) et l'index
-                print(f"Type : {type_penalite}, Index : {index_penalite}")
-                if penalite[1] == 'ligne':
-                    # Trouver l'indice de la ligne avec le coût le plus bas
-                    index = penalite[2]
-                    min_value = min(couts[index])
-                else:
-                    # Trouver l'indice de la colonne avec le coût le plus bas
-                    index = penalite[2]
-                    min_value = min([ligne[index] for ligne in couts])
-                if min_value < min_cost_value:
-                    min_cost_index = index
-                    min_cost_value = min_value
-            # Sélectionner la ligne ou la colonne avec le coût le plus bas
-        if min_cost_index is not None:
-            if penalite_max[1] == 'ligne':
-                # Quantité maximale permise
-                quantite = min(offres[penalite_max[2]], demandes[min_cost_index])
-                # Initialisation de la solution de transport
-                solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[index_max][min_cost_index] = quantite
-                offres[index_max] -= quantite
-                demandes[index_max] -= quantite
-            else:
-                # Quantité maximale permise
-                quantite = min(offres[min_cost_index], demandes[penalite_max[2]])
-                solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[min_cost_index][penalite_max[2]] = quantite
-                offres[min_cost_index] -= quantite
-                demandes[penalite_max[2]] -= quantite
-        else:
-            # Initialisation de la solution de transport
-            solution = [[0] * len(demandes) for _ in range(len(offres))]
-            type_max, index_max = penalite_max[1], penalite_max[2]
-            #Trouvons l'élément avec le coût minimum dans la ligne ou la colonne sélectionnée
-            if type_max == 'ligne':
-                min_cost_index = couts[index_max].index(min(couts[index_max]))
-                #Quantité maximale permise
-                quantite = min(offres[index_max], demandes[min_cost_index])
-                solution[index_max][min_cost_index] = quantite
-                offres[index_max] -= quantite
-                demandes[index_max] -= quantite
-            else:
-                min_cost_index = [ligne[index_max] for ligne in couts].index(min([ligne[index_max] for ligne in couts]))
-                quantite = min(offres[min_cost_index], demandes[index_max])
-                solution[min_cost_index][index_max] = quantite
-                demandes[min_cost_index] -= quantite
-                offres[min_cost_index] -= quantite
-    else:
-        print("Il n'y a pas plusieurs pénalités avec la valeur maximale, donc on choisit la ligne ou la colonne avec le coût le plus bas")
-        min_cost_index = None
-        min_cost_value = float('inf')
-        for penalite in all_penalities:
-            type_penalite, index_penalite = penalite[1], penalite[2]
+    return all_penalities
+
+def find_max_penalty(all_penalities):
+    return max(all_penalities, key=lambda x: x[0])
+
+def count_max_penalty(all_penalities, penalite_max):
+    return sum(1 for x in all_penalities if x[0] == penalite_max[0])
+
+def select_min_cost_index(penalite_max, all_penalities, couts):
+    type_max, index_max = penalite_max[1], penalite_max[2]
+    min_cost_index = None
+    min_cost_value = float('inf')
+    for penalite in all_penalities:
+        if penalite[0] == penalite_max[0]:
             if penalite[1] == 'ligne':
                 index = penalite[2]
                 min_value = min(couts[index])
             else:
                 index = penalite[2]
                 min_value = min([ligne[index] for ligne in couts])
-                min_value_index = [ligne[index] for ligne in couts].index(min_value)
-
             if min_value < min_cost_value:
                 min_cost_index = index
                 min_cost_value = min_value
+    return min_cost_index, min_cost_value
 
-        # Sélectionner la ligne ou la colonne avec le coût le plus bas
+def balas_hammer(offres, demandes, couts):
+    # Extraction des lignes et des colonnes
+    lignes, colonnes = extract_rows_and_columns(couts)
+
+    # Calcul des pénalités pour chaque ligne et colonne
+    all_penalities = calculate_penalties(couts, lignes, colonnes)
+
+    # Trouver la pénalité maximale
+    penalite_max = find_max_penalty(all_penalities)
+
+    # Compter le nombre d'occurrences de la pénalité maximale
+    count_max = count_max_penalty(all_penalities, penalite_max)
+
+    print("La penalite max est ", penalite_max)
+    print(all_penalities)
+
+    if count_max >= 2:
+        min_cost_index, min_cost_value = select_min_cost_index(penalite_max, all_penalities, couts)
         if min_cost_index is not None:
             if penalite_max[1] == 'ligne':
-                # Quantité maximale permise
                 quantite = min(offres[penalite_max[2]], demandes[min_cost_index])
-                # Initialisation de la solution de transport
                 solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[penalite_max[2]][min_value_index] = quantite
+                solution[penalite_max[2]][min_cost_index] = quantite
                 offres[penalite_max[2]] -= quantite
                 demandes[min_cost_index] -= quantite
             else:
-                # Quantité maximale permise
+                quantite = min(offres[min_cost_index], demandes[penalite_max[2]])
+                solution = [[0] * len(demandes) for _ in range(len(offres))]
+                solution[min_cost_index][penalite_max[2]] = quantite
+                offres[min_cost_index] -= quantite
+                demandes[penalite_max[2]] -= quantite
+    else:
+        min_cost_index, min_cost_value = select_min_cost_index(penalite_max, all_penalities, couts)
+        if min_cost_index is not None:
+            if penalite_max[1] == 'ligne':
+                quantite = min(offres[penalite_max[2]], demandes[min_cost_index])
+                solution = [[0] * len(demandes) for _ in range(len(offres))]
+                solution[penalite_max[2]][min_cost_index] = quantite
+                offres[penalite_max[2]] -= quantite
+                demandes[min_cost_index] -= quantite
+            else:
                 quantite = min(offres[min_cost_index], demandes[penalite_max[2]])
                 solution = [[0] * len(demandes) for _ in range(len(offres))]
                 solution[min_cost_index][penalite_max[2]] = quantite
                 offres[min_cost_index] -= quantite
                 demandes[penalite_max[2]] -= quantite
 
-    #Afficher la matrice
     print("La matrice des couts après balas-hammer")
     print(tabulate(solution, tablefmt='grid'))
     return solution
+
 
 def calcul_cout_total(couts, solution):
     total = 0
