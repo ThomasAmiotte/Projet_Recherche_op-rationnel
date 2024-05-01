@@ -1,6 +1,7 @@
-#Lecture des données issues du fichier .txt et son stockage en mémoire
+# Lecture des données issues du fichier .txt et son stockage en mémoire
 from tabulate import tabulate
 from collections import deque
+
 
 def read_file(file_name):
     tableau = []
@@ -9,8 +10,10 @@ def read_file(file_name):
             tache = list(map(int, line.strip().split()))
             tableau.append(tache)
     return tableau
-#Affichage des tableaux suivants
-#Matrice des coûts
+
+
+# Affichage des tableaux suivants
+# Matrice des coûts
 def afficher_matrice_couts(tableau):
     lignes_intermediaires = tableau[1:-1]
     matrice_couts = [ligne[:-1] for ligne in lignes_intermediaires]
@@ -18,17 +21,22 @@ def afficher_matrice_couts(tableau):
     print(tabulate(matrice_couts, tablefmt='grid'))
     return matrice_couts
 
-#Proposition de transport (Nord-Ouest)
-#1.Extraction des offres
+
+# Proposition de transport (Nord-Ouest)
+# 1.Extraction des offres
 def afficher_offre(tableau):
     lignes_intermediaires = tableau[1:-1]
     offre = [ligne[-1] for ligne in lignes_intermediaires]
     return offre
-#2.Extraction des demandes
+
+
+# 2.Extraction des demandes
 def afficher_demande(tableau):
     demande = tableau[-1]
     return demande
-#NORD OUEST
+
+
+# NORD OUEST
 def coin_nord_ouest(offres, demandes, couts):
     # Copie les listes pour éviter de modifier les originales
     offres = offres[:]
@@ -54,10 +62,13 @@ def coin_nord_ouest(offres, demandes, couts):
     print("Voici la proposition NORD OUEST :")
     print(tabulate(solution, tablefmt='grid'))
     return solution
+
+
 def extract_rows_and_columns(couts):
     lignes = couts
     colonnes = [list(colonne) for colonne in zip(*couts)]
     return lignes, colonnes
+
 
 def calculate_penalties(couts, lignes, colonnes):
     penalites_lignes = [(sorted(line)[1] - sorted(line)[0], 'ligne', i) for i, line in enumerate(lignes)]
@@ -65,11 +76,14 @@ def calculate_penalties(couts, lignes, colonnes):
     all_penalities = penalites_lignes + penalites_colonnes
     return all_penalities
 
+
 def find_max_penalty(all_penalities):
     return max(all_penalities, key=lambda x: x[0])
 
+
 def count_max_penalty(all_penalities, penalite_max):
     return sum(1 for x in all_penalities if x[0] == penalite_max[0])
+
 
 def select_min_cost_index(penalite_max, all_penalities, couts):
     type_max, index_max = penalite_max[1], penalite_max[2]
@@ -87,6 +101,7 @@ def select_min_cost_index(penalite_max, all_penalities, couts):
                 min_cost_index = index
                 min_cost_value = min_value
     return min_cost_index, min_cost_value
+
 
 def balas_hammer(offres, demandes, couts):
     # Extraction des lignes et des colonnes
@@ -147,17 +162,18 @@ def calcul_cout_total(couts, solution):
             total += solution[i][j] * couts[i][j]
     return total
 
-#Savoir si la proposition est acyclique ou non
+
+# Savoir si la proposition est acyclique ou non
 
 def iscycle(graph):
-    visited = set() #Un set pour sotcké les noeuds visités
-    parent = {} #Dictionnaire pour garder une trace des parents des sommets
+    visited = set()  # Un set pour sotcké les noeuds visités
+    parent = {}  # Dictionnaire pour garder une trace des parents des sommets
 
-    #Fonction de parcours en largeur
+    # Fonction de parcours en largeur
     def bfs(start):
         queue = deque([start])
         visited.add(start)
-        parent[start] = None #Le sommet de départ n'a pas de parent
+        parent[start] = None  # Le sommet de départ n'a pas de parent
         while queue:
             current = queue.popleft()
             for neighbor in graph[current]:
@@ -166,12 +182,12 @@ def iscycle(graph):
                     parent[neighbor] = current
                     queue.append(neighbor)
                 elif parent[current] != neighbor:
-                    #Un cycle a été détécté
+                    # Un cycle a été détécté
                     return True, current, neighbor
         return False, None, None
 
 
-def find_cycle(start,end,parent):
+def find_cycle(start, end, parent):
     cycle = []
     cycle.append(start)
     while start != end:
@@ -180,6 +196,8 @@ def find_cycle(start,end,parent):
         cycle.append(end)
         cycle.reverse()
         return cycle
+
+
 """has_cycle, cycle = detect_cycle(graph)
 if has_cycle:
     print("Cycle detected:", cycle)
