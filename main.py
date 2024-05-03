@@ -33,3 +33,13 @@ demandes = afficher_demande(tableau)
 print(demandes)
 print("Voici la proposition apres Balas-Hammer")
 balas_hammer(offres, demandes, couts)
+
+graph = [
+    [1, 2],
+    [0, 2],
+    [0, 1, 3],
+    [2, 4],
+    [3]
+]
+
+print(detect_cycle_bfs(graph))

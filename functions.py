@@ -157,28 +157,49 @@ def calcul_cout_total(couts, solution):
 
 #Savoir si la proposition est acyclique ou non
 
-def iscycle(graph):
-    visited = set() #Un set pour sotcké les noeuds visités
-    parent = {} #Dictionnaire pour garder une trace des parents des sommets
+from collections import deque
 
-    #Fonction de parcours en largeur
-    def bfs(start):
-        queue = deque([start])
-        visited.add(start)
-        parent[start] = None #Le sommet de départ n'a pas de parent
+
+def detect_cycle_bfs(graph):
+    n = len(graph)  # Nombre de sommets dans le graphe
+    visited = [False] * n  # Marquer les sommets visités
+    parent = [-1] * n  # Parent de chaque sommet dans l'arbre de parcours
+
+    def bfs(source):
+        queue = deque([source])
+        visited[source] = True
+
         while queue:
-            current = queue.popleft()
-            for neighbor in graph[current]:
-                if neighbor not in visited:
+            node = queue.popleft()
+            for neighbor in graph[node]:
+                if not visited[neighbor]:  # Si le voisin n'a pas été visité
+                    visited[neighbor] = True
+                    parent[neighbor] = node
                     queue.append(neighbor)
-                    parent[neighbor] = current
-                    queue.append(neighbor)
-                elif parent[current] != neighbor:
-                    #Un cycle a été détécté
-                    return True, current, neighbor
-        return False, None, None
+                elif parent[node] != neighbor:  # Détection d'un cycle
+                    # Reconstruction du cycle
+                    cycle = []
+                    # Remonter à partir de node jusqu'à trouver le cycle
+                    current = node
+                    while current != -1 and current != neighbor:
+                        cycle.append(current)
+                        current = parent[current]
+                    cycle.append(neighbor)
+                    cycle.append(node)
+                    cycle.reverse()
+                    return cycle
+        return None
 
+    # Exécuter BFS à partir de chaque sommet non visité
+    for i in range(n):
+        if not visited[i]:
+            result = bfs(i)
+            if result:
+                return result  # Retourner le premier cycle trouvé
 
+    return "No cycle found"  # Aucun cycle trouvé
+
+"""
 def find_cycle(start,end,parent):
     cycle = []
     cycle.append(start)
@@ -188,7 +209,7 @@ def find_cycle(start,end,parent):
         cycle.append(end)
         cycle.reverse()
         return cycle
-"""has_cycle, cycle = detect_cycle(graph)
+has_cycle, cycle = detect_cycle(graph)
 if has_cycle:
     print("Cycle detected:", cycle)
 else:
