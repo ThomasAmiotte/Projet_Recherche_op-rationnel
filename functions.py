@@ -88,6 +88,14 @@ def select_min_cost_index(penalite_max, all_penalities, couts):
                 min_cost_value = min_value
     return min_cost_index, min_cost_value
 
+def remove_row_or_column(couts, index, type_element):
+    if type_element == 'ligne':
+        #Suppression d'une ligne
+        return [row for i, row in enumerate(couts) if i !=index]
+    else:
+        #Suppression d'une colonne
+        return [row[:index] + row[index + 1:] for row in couts]
+
 def balas_hammer(offres, demandes, couts):
     # Extraction des lignes et des colonnes
     lignes, colonnes = extract_rows_and_columns(couts)
