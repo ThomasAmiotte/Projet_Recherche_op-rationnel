@@ -71,10 +71,11 @@ def extract_rows_and_columns(couts):
 
 
 def calculate_penalties(couts, lignes, colonnes):
-    penalites_lignes = [(sorted(line)[1] - sorted(line)[0], 'ligne', i) for i, line in enumerate(lignes)]
-    penalites_colonnes = [(sorted(col)[1] - sorted(col)[0], 'colonne', i) for i, col in enumerate(colonnes)]
-    all_penalities = penalites_lignes + penalites_colonnes
-    return all_penalities
+    penalites_lignes = [(sorted(set(line))[1] - sorted(set(line))[0] if len(set(line)) > 1 else 0, 'ligne', i)
+                        for i, line in enumerate(lignes)]
+    penalites_colonnes = [(sorted(set(col))[1] - sorted(set(col))[0] if len(set(col)) > 1 else 0, 'colonne', i)
+                          for i, col in enumerate(colonnes)]
+    return penalites_lignes + penalites_colonnes
 
 
 def find_max_penalty(all_penalities):
@@ -85,74 +86,119 @@ def count_max_penalty(all_penalities, penalite_max):
     return sum(1 for x in all_penalities if x[0] == penalite_max[0])
 
 
-def select_min_cost_index(penalite_max, all_penalities, couts):
+def select_min_cost_index(penalite_max, all_penalities, couts, offres, demandes):
     type_max, index_max = penalite_max[1], penalite_max[2]
-    min_cost_index = None
-    min_cost_value = float('inf')
-    for penalite in all_penalities:
-        if penalite[0] == penalite_max[0]:
-            if penalite[1] == 'ligne':
-                index = penalite[2]
-                min_value = min(couts[index])
-            else:
-                index = penalite[2]
-                min_value = min([ligne[index] for ligne in couts])
-            if min_value < min_cost_value:
-                min_cost_index = index
-                min_cost_value = min_value
-    return min_cost_index, min_cost_value
+    best_index = None
+    best_cost = float('inf')
+
+    if type_max == 'ligne':
+        for j in range(len(demandes)):
+            if demandes[j] > 0 and couts[index_max][j] < best_cost:
+                best_index = j
+                best_cost = couts[index_max][j]
+    else:
+        for i in range(len(offres)):
+            if offres[i] > 0 and couts[i][index_max] < best_cost:
+                best_index = i
+                best_cost = couts[i][index_max]
+
+    return best_index, best_cost
+
+
+def update_costs(couts, i, j, increment=1):
+    couts[i][j] += increment
+
+
+def validate_solution(offres, demandes):
+    return all(x == 0 for x in offres) and all(x == 0 for x in demandes)
+
+
+def print_table(data, headers):
+    print(tabulate(data, headers=headers, tablefmt="grid"))
 
 
 def balas_hammer(offres, demandes, couts):
-    # Extraction des lignes et des colonnes
-    lignes, colonnes = extract_rows_and_columns(couts)
+    solution = [[0] * len(demandes) for _ in range(len(offres))]
+    costs_updated = [row[:] for row in couts]
 
-    # Calcul des pénalités pour chaque ligne et colonne
-    all_penalities = calculate_penalties(couts, lignes, colonnes)
+    while True:
+        lignes, colonnes = extract_rows_and_columns(costs_updated)
+        penalites = calculate_penalties(costs_updated, lignes, colonnes)
+        max_penalite = find_max_penalty(penalites)
 
-    # Trouver la pénalité maximale
-    penalite_max = find_max_penalty(all_penalities)
+        if max_penalite[0] == 0 or all(o == 0 for o in offres) or all(d == 0 for d in demandes):
+            break  # Aucune pénalité significative ou toutes les offres/demandes sont satisfaites
 
-    # Compter le nombre d'occurrences de la pénalité maximale
-    count_max = count_max_penalty(all_penalities, penalite_max)
+        min_cost_index, min_cost_value = select_min_cost_index(max_penalite, penalites, costs_updated, offres, demandes)
+        if min_cost_index is None or min_cost_index >= len(demandes) or max_penalite[2] >= len(offres):
+            print("Aucun chemin viable trouvé ou indices hors limite.")
+            break
 
-    print("La penalite max est ", penalite_max)
-    print(all_penalities)
+        source_index = max_penalite[2] if max_penalite[1] == 'ligne' else min_cost_index
+        target_index = min_cost_index if max_penalite[1] == 'ligne' else max_penalite[2]
 
-    if count_max >= 2:
-        min_cost_index, min_cost_value = select_min_cost_index(penalite_max, all_penalities, couts)
-        if min_cost_index is not None:
-            if penalite_max[1] == 'ligne':
-                quantite = min(offres[penalite_max[2]], demandes[min_cost_index])
-                solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[penalite_max[2]][min_cost_index] = quantite
-                offres[penalite_max[2]] -= quantite
-                demandes[min_cost_index] -= quantite
-            else:
-                quantite = min(offres[min_cost_index], demandes[penalite_max[2]])
-                solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[min_cost_index][penalite_max[2]] = quantite
-                offres[min_cost_index] -= quantite
-                demandes[penalite_max[2]] -= quantite
-    else:
-        min_cost_index, min_cost_value = select_min_cost_index(penalite_max, all_penalities, couts)
-        if min_cost_index is not None:
-            if penalite_max[1] == 'ligne':
-                quantite = min(offres[penalite_max[2]], demandes[min_cost_index])
-                solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[penalite_max[2]][min_cost_index] = quantite
-                offres[penalite_max[2]] -= quantite
-                demandes[min_cost_index] -= quantite
-            else:
-                quantite = min(offres[min_cost_index], demandes[penalite_max[2]])
-                solution = [[0] * len(demandes) for _ in range(len(offres))]
-                solution[min_cost_index][penalite_max[2]] = quantite
-                offres[min_cost_index] -= quantite
-                demandes[penalite_max[2]] -= quantite
+        quantite = min(offres[source_index], demandes[target_index])
+        if quantite > 0:
+            solution[source_index][target_index] += quantite
+            offres[source_index] -= quantite
+            demandes[target_index] -= quantite
+            update_costs(costs_updated, source_index, target_index)
+        else:
+            print("Aucune quantité significative à transporter, arrêt de l'algorithme.")
+            break
 
-    print("La matrice des couts après balas-hammer")
+        print(f"Transport de {quantite} unités de {source_index} à {target_index}")
+        print(f"Offres restantes: {offres}, Demandes restantes: {demandes}")
+
+    print("Solution finale:")
     print(tabulate(solution, tablefmt='grid'))
     return solution
+
+
+def update_costs_matrix(couts, solution, offres, demandes):
+    """Met à jour les coûts et les quantités restantes dans les offres et demandes après chaque itération de transport."""
+    n = len(offres)
+    m = len(demandes)
+
+    # Mise à jour des offres et demandes
+    for i in range(n):
+        for j in range(m):
+            transported = solution[i][j]
+            if transported > 0:
+                # Soustraire la quantité transportée des offres et des demandes
+                offres[i] -= transported
+                demandes[j] -= transported
+                # Assurez-vous que la quantité ne devienne pas négative
+                offres[i] = max(offres[i], 0)
+                demandes[j] = max(demandes[j], 0)
+
+                # Mettre à jour les coûts (si nécessaire, par exemple en augmentant légèrement le coût pour éviter la réutilisation de cette route)
+                # Cela pourrait être une stratégie pour empêcher l'algorithme de choisir la même route indéfiniment si plusieurs solutions sont possibles.
+                couts[i][
+                    j] += 1  # Augmente le coût pour rendre cette route moins attrayante pour les itérations futures
+
+
+def update_transport(offres, demandes, max_penalite, min_cost_index, couts):
+    # Vérification si les indices sont dans les limites des listes offres et demandes avant toute manipulation
+    if max_penalite[2] >= len(offres) or min_cost_index >= len(demandes):
+        print(f"Index out of range: max_penalite[2]={max_penalite[2]}, min_cost_index={min_cost_index}")
+        return [], False  # Retourner une solution vide et False pour indiquer l'arrêt
+
+    print(f"Starting transport - Offre Index: {max_penalite[2]}, Demande Index: {min_cost_index}")
+    quantite = min(offres[max_penalite[2]], demandes[min_cost_index])
+    print(f"Quantité à transporter: {quantite}")
+
+    solution = [[0] * len(demandes) for _ in range(len(offres))]
+    solution[max_penalite[2]][min_cost_index] = quantite
+    offres[max_penalite[2]] -= quantite
+    demandes[min_cost_index] -= quantite
+
+    # Affiche l'état des offres et demandes après transport
+    print(f"Remaining Offers: {offres}")
+    print(f"Remaining Demands: {demandes}")
+
+    # Retourner la solution partielle et un booléen indiquant si le transport a été possible
+    return solution, True if quantite > 0 else False
 
 
 def calcul_cout_total(couts, solution):
@@ -164,7 +210,6 @@ def calcul_cout_total(couts, solution):
 
 
 # Savoir si la proposition est acyclique ou non
-
 def iscycle(graph):
     visited = set()  # Un set pour sotcké les noeuds visités
     parent = {}  # Dictionnaire pour garder une trace des parents des sommets
@@ -198,9 +243,3 @@ def find_cycle(start, end, parent):
         return cycle
 
 
-"""has_cycle, cycle = detect_cycle(graph)
-if has_cycle:
-    print("Cycle detected:", cycle)
-else:
-    print("No cycle detected")
-    """
