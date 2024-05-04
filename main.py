@@ -24,6 +24,10 @@ def main():
         balas_hammer.display_matrix_tabulate(balas_hammer.solution, "Solution Balas-Hammer")
         balas_hammer.display_matrix_brackets(balas_hammer.solution, "Solution Balas-Hammer")
 
+        # Calculer les pénalités et les afficher
+        balas_hammer.calculate_penalties()
+        balas_hammer.display_penalties()
+
         # Calculer et afficher le coût total
         cost = tableau.calculate_total_cost()
         print(f"Coût total de la solution: {cost}")

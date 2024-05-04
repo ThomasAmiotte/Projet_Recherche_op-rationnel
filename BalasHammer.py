@@ -39,18 +39,20 @@ class BalasHammer:
                     self.tableau.couts[i, j] = np.inf
 
     def calculate_penalties(self):
-        # Calcul des pénalités pour chaque ligne et chaque colonne
         self.penalties = {'row': [], 'column': []}
-        for i, row in enumerate(self.tableau.couts):
-            sorted_costs = np.sort(np.unique(row))
-            if len(sorted_costs) > 1:
-                self.penalties['row'].append((sorted_costs[1] - sorted_costs[0], i))
+        for i in range(self.tableau.couts.shape[0]):
+            row = self.tableau.couts[i, :]
+            sorted_row = np.sort(row[row != np.inf])  # trier les coûts qui ne sont pas infinis
+            if len(sorted_row) >= 2:
+                penalty = sorted_row[1] - sorted_row[0]  # calculer la différence entre les deux plus petits coûts
+                self.penalties['row'].append((penalty, i))
 
         for j in range(self.tableau.couts.shape[1]):
             column = self.tableau.couts[:, j]
-            sorted_costs = np.sort(np.unique(column))
-            if len(sorted_costs) > 1:
-                self.penalties['column'].append((sorted_costs[1] - sorted_costs[0], j))
+            sorted_column = np.sort(column[column != np.inf])  # trier les coûts qui ne sont pas infinis
+            if len(sorted_column) >= 2:
+                penalty = sorted_column[1] - sorted_column[0]  # calculer la différence entre les deux plus petits coûts
+                self.penalties['column'].append((penalty, j))
 
     def select_and_adjust(self):
         # Crée des copies des tableaux d'offre et de demande
@@ -115,8 +117,13 @@ class BalasHammer:
                 demand[j] -= flow
 
     def display_penalties(self):
-        print("Pénalités par cellule:")
-        print(self.penalties)
+        print("Pénalités par ligne:")
+        for penalty in self.penalties['row']:
+            print(f"Ligne {penalty[1] + 1}: {penalty[0]}")
+
+        print("Pénalités par colonne:")
+        for penalty in self.penalties['column']:
+            print(f"Colonne {penalty[1] + 1}: {penalty[0]}")
 
     def execute(self):
         self.find_initial_solution()
