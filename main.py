@@ -72,7 +72,7 @@ def main():
     tableau_files = [
         "table1.txt", "table2.txt", "table3.txt", "table4.txt",
         "table5.txt", "table6.txt", "table7.txt", "table8.txt",
-        "table9.txt", "table10.txt"
+        "table9.txt", "table10.txt", "table11.txt", "table12.txt",
     ]
 
     for file_name in tableau_files:
