@@ -22,6 +22,8 @@ while True:
     else:
         print("Entrée invalide. Veuillez choisir entre 1 et 2.\n")
 """
+import random
+import time
 from functions import *
 tableau = read_file("tableau/table1.txt")
 couts = afficher_matrice_couts(tableau)
@@ -43,3 +45,49 @@ graph = [
 ]
 
 print(detect_cycle_bfs(graph))
+
+
+### LES PROBLÈMES DE TRANSPORT EN ENTRÉE ###
+
+def generate_random_transport_problem(n):
+    # Initialiser la matrice A avec des zéros
+    A = [[0 for _ in range(n)] for _ in range(n)]
+
+    # Générer un nombre aléatoire entre 1 et 100 pour chaque élément de la matrice
+    for i in range(n):
+        for j in range(n):
+            A[i][j] = random.randint(1, 100)
+
+    return A
+
+def generer_matrice(n):
+    matrice = [[random.randint(1, 100) for _ in range(n)] for _ in range(n)]
+    return matrice
+
+def calculer_provisions_et_commandes(matrice):
+    n = len(matrice)
+    provisions = [sum(ligne) for ligne in matrice]
+    commandes = [sum(matrice[i][j] for i in range(n)) for j in range(n)]
+    return provisions, commandes
+
+# Exemple d'utilisation
+n = 5  # Taille de la matrice
+matrice = generer_matrice(n)
+print("Matrice:")
+for ligne in matrice:
+    print(ligne)
+
+provisions, commandes = calculer_provisions_et_commandes(matrice)
+print("\nSomme des provisions:", provisions)
+print("Somme des commandes:", commandes)
+
+### LA MESURE DU TEMPS ###
+
+### MESURE DU TEMPS NORD OUEST ###
+
+start_time = time.perf_counter()
+result = coin_nord_ouest(offres, demandes, couts)
+end_time = time.perf_counter()
+
+execution_time = end_time - start_time
+print("Temps d'exécution:", execution_time, "secondes")
