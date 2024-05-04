@@ -70,11 +70,34 @@ def extract_rows_and_columns(couts):
     return lignes, colonnes
 
 
-def calculate_penalties(couts, lignes, colonnes):
+"""def calculate_penalties(couts, lignes, colonnes):
     penalites_lignes = [(sorted(set(line))[1] - sorted(set(line))[0] if len(set(line)) > 1 else 0, 'ligne', i)
                         for i, line in enumerate(lignes)]
     penalites_colonnes = [(sorted(set(col))[1] - sorted(set(col))[0] if len(set(col)) > 1 else 0, 'colonne', i)
                           for i, col in enumerate(colonnes)]
+    return penalites_lignes + penalites_colonnes
+"""
+
+
+def calculate_penalties(couts, lignes, colonnes):
+    # Calcul des pénalités pour chaque ligne en trouvant la différence entre les deux plus petits coûts uniques
+    penalites_lignes = []
+    for i, line in enumerate(lignes):
+        unique_costs = list(set(line))
+        if len(unique_costs) > 1:
+            sorted_costs = sorted(unique_costs)
+            penalite = sorted_costs[1] - sorted_costs[0]
+            penalites_lignes.append((penalite, 'ligne', i))
+
+    # Même logique appliquée aux colonnes
+    penalites_colonnes = []
+    for i, col in enumerate(colonnes):
+        unique_costs = list(set(col))
+        if len(unique_costs) > 1:
+            sorted_costs = sorted(unique_costs)
+            penalite = sorted_costs[1] - sorted_costs[0]
+            penalites_colonnes.append((penalite, 'colonne', i))
+
     return penalites_lignes + penalites_colonnes
 
 
@@ -86,7 +109,7 @@ def count_max_penalty(all_penalities, penalite_max):
     return sum(1 for x in all_penalities if x[0] == penalite_max[0])
 
 
-def select_min_cost_index(penalite_max, all_penalities, couts, offres, demandes):
+"""def select_min_cost_index(penalite_max, all_penalities, couts, offres, demandes):
     type_max, index_max = penalite_max[1], penalite_max[2]
     best_index = None
     best_cost = float('inf')
@@ -103,6 +126,30 @@ def select_min_cost_index(penalite_max, all_penalities, couts, offres, demandes)
                 best_cost = couts[i][index_max]
 
     return best_index, best_cost
+"""
+
+
+def select_min_cost_index(penalite_max, all_penalities, couts, offres, demandes):
+    type_max, index_max = penalite_max[1], penalite_max[2]
+    best_index = None
+    best_cost = float('inf')
+
+    if type_max == 'ligne':
+        # Chercher le coût minimum pour une ligne donnée avec demande disponible
+        for j in range(len(demandes)):
+            if demandes[j] > 0 and couts[index_max][j] < best_cost:
+                best_cost = couts[index_max][j]
+                best_index = j
+    else:
+        # Chercher le coût minimum pour une colonne donnée avec offre disponible
+        for i in range(len(offres)):
+            if offres[i] > 0 and couts[i][index_max] < best_cost:
+                best_cost = couts[i][index_max]
+                best_index = i
+
+    # Assurer le retour d'un tuple même si aucun index admissible n'est trouvé
+    return best_index, best_cost if best_index is not None else (None, None)
+
 
 
 def update_costs(couts, i, j, increment=1):
@@ -130,7 +177,7 @@ def balas_hammer(offres, demandes, couts):
             break  # Aucune pénalité significative ou toutes les offres/demandes sont satisfaites
 
         min_cost_index, min_cost_value = select_min_cost_index(max_penalite, penalites, costs_updated, offres, demandes)
-        if min_cost_index is None or min_cost_index >= len(demandes) or max_penalite[2] >= len(offres):
+        if min_cost_index is None:
             print("Aucun chemin viable trouvé ou indices hors limite.")
             break
 
@@ -153,6 +200,8 @@ def balas_hammer(offres, demandes, couts):
     print("Solution finale:")
     print(tabulate(solution, tablefmt='grid'))
     return solution
+
+
 
 
 def update_costs_matrix(couts, solution, offres, demandes):
