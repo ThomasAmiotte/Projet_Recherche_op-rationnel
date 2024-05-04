@@ -1,6 +1,5 @@
 #Lecture des données issues du fichier .txt et son stockage en mémoire
 from tabulate import tabulate
-from collections import deque
 
 def read_file(file_name):
     tableau = []
@@ -9,6 +8,7 @@ def read_file(file_name):
             tache = list(map(int, line.strip().split()))
             tableau.append(tache)
     return tableau
+
 #Affichage des tableaux suivants
 #Matrice des coûts
 def afficher_matrice_couts(tableau):
@@ -23,11 +23,17 @@ def afficher_matrice_couts(tableau):
 def afficher_offre(tableau):
     lignes_intermediaires = tableau[1:-1]
     offre = [ligne[-1] for ligne in lignes_intermediaires]
+    print("Voici la matrice de l'offre")
+    print(offre)
     return offre
+
 #2.Extraction des demandes
 def afficher_demande(tableau):
     demande = tableau[-1]
+    print("Voici la matrice de la demande")
+    print(demande)
     return demande
+
 #NORD OUEST
 def coin_nord_ouest(offres, demandes, couts):
     # Copie les listes pour éviter de modifier les originales
@@ -54,6 +60,8 @@ def coin_nord_ouest(offres, demandes, couts):
     print("Voici la proposition NORD OUEST :")
     print(tabulate(solution, tablefmt='grid'))
     return solution
+
+
 def extract_rows_and_columns(couts):
     lignes = couts
     colonnes = [list(colonne) for colonne in zip(*couts)]
