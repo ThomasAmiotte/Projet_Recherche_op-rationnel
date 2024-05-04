@@ -5,9 +5,7 @@ from TableauTransport import TransportTableau
 def main():
     # Liste de tous les fichiers de tableau à traiter
     tableau_files = [
-        "tableau/table1.txt", "tableau/table2.txt", "tableau/table3.txt",
-        "tableau/table4.txt", "tableau/table5.txt", "tableau/table6.txt",
-        "tableau/table7.txt"
+        "tableau/table5.txt"
     ]
 
     for file_path in tableau_files:
@@ -27,6 +25,9 @@ def main():
         # Calculer les pénalités et les afficher
         balas_hammer.calculate_penalties()
         balas_hammer.display_penalties()
+
+        # Exécution de la nouvelle méthode select_and_adjust
+        balas_hammer.select_and_adjust()
 
         # Calculer et afficher le coût total
         cost = tableau.calculate_total_cost()

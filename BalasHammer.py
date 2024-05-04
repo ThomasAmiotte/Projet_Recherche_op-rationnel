@@ -1,5 +1,6 @@
 import numpy as np
 from tabulate import tabulate
+import random
 
 
 class BalasHammer:
@@ -55,45 +56,50 @@ class BalasHammer:
                 self.penalties['column'].append((penalty, j))
 
     def select_and_adjust(self):
-        # Crée des copies des tableaux d'offre et de demande
-        offres_copy = np.copy(self.tableau.offres)
-        demandes_copy = np.copy(self.tableau.demandes)
+        supply = np.copy(self.tableau.offres)
+        demand = np.copy(self.tableau.demandes)
+        rows_processed = np.zeros_like(supply, dtype=bool)
+        cols_processed = np.zeros_like(demand, dtype=bool)
 
-        # Continue jusqu'à ce que l'offre et la demande soient complètement épuisées
-        while np.any(offres_copy > 0) and np.any(demandes_copy > 0):
-            # Calcule les pénalités pour chaque ligne et colonne
+        iteration = 0
+        while np.any(supply > 0) and np.any(demand > 0):
+            iteration += 1
+            print(f"\nIteration {iteration}:")
+
             self.calculate_penalties()
 
-            # Sélectionne la ligne ou la colonne où la pénalité est maximale
-            max_penalty = max(self.penalties['column'] + self.penalties['row'], key=lambda x: x[0], default=(0, -1, -1))
-            if max_penalty[1] == -1:
-                break  # Aucune pénalité trouvée, probablement une erreur de logique
-
-            # Trouve toutes les lignes/colonnes avec la pénalité maximale
+            max_penalty = max(self.penalties['column'] + self.penalties['row'], key=lambda x: x[0])
             max_penalty_indices = [index for index in self.penalties['column'] + self.penalties['row'] if
                                    index[0] == max_penalty[0]]
 
-            # S'il y a plusieurs lignes/colonnes avec la même pénalité maximale
-            if len(max_penalty_indices) > 1:
-                # Choisissez la ligne/colonne dont la cellule de coût minimal a la capacité maximale
-                max_capacity = -1
-                for index in max_penalty_indices:
+            min_cost = np.inf
+            min_cost_index = None
+            for index in max_penalty_indices:
+                if len(index) >= 3:
                     i, j = index[1], index[2]
-                    capacity = min(offres_copy[i], demandes_copy[j])
-                    if capacity > max_capacity:
-                        max_capacity = capacity
-                        max_penalty = index
+                    if self.tableau.couts[i, j] < min_cost and not rows_processed[i] and not cols_processed[j]:
+                        min_cost = self.tableau.couts[i, j]
+                        min_cost_index = (i, j)
 
-            i, j = max_penalty[1], max_penalty[2]
-            # Allocation basée sur le minimum de l'offre ou de la demande restante
-            quantity = min(offres_copy[i], demandes_copy[j])
-            self.solution[i, j] += quantity
-            offres_copy[i] -= quantity
-            demandes_copy[j] -= quantity
+            if min_cost_index is None:
+                break
 
-            # Si l'offre ou la demande de cette cellule est épuisée, mettez son coût à l'infini
-            if offres_copy[i] == 0 or demandes_copy[j] == 0:
+            i, j = min_cost_index
+            flow = min(supply[i], demand[j])
+            print(f"Choix de la cellule ({i + 1}, {j + 1}) avec un coût de {min_cost} et un flux de {flow}")
+
+            self.solution[i, j] += flow
+
+            # Mark the row and column as processed
+            rows_processed[i] = True
+            cols_processed[j] = True
+
+            # If the supply or demand for this cell is exhausted, set its cost to infinity
+            if supply[i] == 0 or demand[j] == 0:
                 self.tableau.couts[i, j] = np.inf
+
+            print("Solution actuelle:")
+            print(self.solution)
 
     def find_initial_solution(self):
         # Implémentation de l'algorithme Balas-Hammer pour trouver la solution initiale
