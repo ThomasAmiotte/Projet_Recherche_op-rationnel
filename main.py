@@ -95,3 +95,10 @@ execution_time = end_time - start_time
 print("Temps d'exécution de l'algorithme Nord-Ouest (θNO(n)):", execution_time, "secondes")
 
 
+def generate_random_transport_problem(n):
+    # Générer des valeurs aléatoires pour les coûts
+    cost = [[random.randint(1, 100) for _ in range(n)] for _ in range(n)]
+    # Générer des valeurs aléatoires pour les offres et les demandes
+    supp = [random.randint(1, 100) for _ in range(n)]
+    demandes = [random.randint(1, 100) for _ in range(n)]
+    return cost, supp, demandes
