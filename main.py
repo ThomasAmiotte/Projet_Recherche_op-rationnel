@@ -85,9 +85,13 @@ print("Somme des commandes:", commandes)
 
 ### MESURE DU TEMPS NORD OUEST ###
 
+n = max(len(offres), len(demandes))  # Taille des listes offres et demandes
+
 start_time = time.perf_counter()
 result = coin_nord_ouest(offres, demandes, couts)
 end_time = time.perf_counter()
 
 execution_time = end_time - start_time
-print("Temps d'exécution:", execution_time, "secondes")
+print("Temps d'exécution de l'algorithme Nord-Ouest (θNO(n)):", execution_time, "secondes")
+
+
