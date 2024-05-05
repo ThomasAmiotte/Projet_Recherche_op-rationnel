@@ -5,9 +5,9 @@ import random
 
 class BalasHammer:
     def __init__(self, tableau):
-        self.penalties = None
-        self.tableau = tableau
-        self.solution = np.zeros_like(self.tableau.couts)
+            self.penalties = None
+            self.tableau = tableau
+            self.solution = np.zeros_like(self.tableau.couts)
 
     def display_matrix_tabulate(self, matrix, title="Matrix"):
         print(title + ":\n" + tabulate(matrix, tablefmt="fancy_grid", headers="keys", showindex="always"))
@@ -139,6 +139,7 @@ class BalasHammer:
             print("Erreur: Toute l'offre ou la demande n'a pas été complètement utilisée.")
         print("Solution finale:")
         self.display_matrix_tabulate(self.solution, "Solution Balas-Hammer")
+        self.display_matrix_brackets(self.solution, "Solution Balas-Hammer Brackets")
         total_cost = np.sum(self.solution * self.tableau.couts)
         print("Coût total de la solution:", total_cost)
         self.tableau.check_supply_demand()
