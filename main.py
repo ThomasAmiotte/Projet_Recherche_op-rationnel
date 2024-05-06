@@ -3,29 +3,33 @@ from TableauTransport import TransportTableau
 
 
 def main():
-    # Liste de tous les fichiers de tableau à traiter
-    tableau_files = [
-        "tableau/table5.txt"
-    ]
+    while True:
+        print("\nMenu:")
+        print("Veuillez choisir un nombre entre 1 et 12.")
+        print("0. Quitter")
 
-    for file_path in tableau_files:
+        choice = input("Quelle table voulez-vous lancer ? ")
+
+        if choice == '0':
+            break
+
+        if not choice.isdigit() or int(choice) < 1 or int(choice) > 12:
+            print("Choix invalide. Veuillez réessayer.")
+            continue
+
+        file_path = f"tableau/table{choice}.txt"
         print(f"Traitement du fichier {file_path}")
         tableau = TransportTableau(file_path)
-        balas_hammer = BalasHammer(tableau)
 
-        # Trouver une solution initiale avec l'angle nord-ouest comme point de départ pour Balas-Hamme
+        # Trouver une solution initiale avec l'angle nord-ouest
+        tableau.corner_north_west()
         tableau.display_all_matrices()
 
+        # Création d'une instance de la classe BalasHammer
+        balas_hammer = BalasHammer(tableau)
 
         # Exécution de la nouvelle méthode select_and_adjust
-        balas_hammer.select_and_adjust()
-
-        # Calculer et afficher le coût total
-        cost = tableau.calculate_total_cost()
-        print(f"Coût total de la solution: {cost}")
-
-        # Vérifier la conformité de l'offre et de la demande
-        tableau.check_supply_demand()
+        balas_hammer.execute()
 
         # Séparation visuelle entre les traitements de fichiers
         print("\n" + "=" * 60 + "\n")

@@ -19,8 +19,10 @@ class BalasHammer:
         print(matrix.tolist())
 
     def calculate_penalties(self,cost_copy):
+        """
         print("Cost copy de la fonction")
         print(cost_copy)
+        """
         penalties = {'row': [], 'column': []}
         if np.all(np.isinf(cost_copy)):
             return None
@@ -28,8 +30,8 @@ class BalasHammer:
             for i in range(cost_copy.shape[0]):
                 row = cost_copy[i, :]
                 sorted_row = np.sort(row[row != np.inf])  # trier les coûts qui ne sont pas infinis
-                print("Sorted Row")
-                print(sorted_row)
+                """print("Sorted Row")
+                print(sorted_row)"""
                 if len(sorted_row) >= 2:
                     penalty = sorted_row[1] - sorted_row[0]  # calculer la différence entre les deux plus petits coûts
                     penalties['row'].append((penalty, i))
@@ -40,8 +42,8 @@ class BalasHammer:
             for j in range(cost_copy.shape[1]):
                 column = cost_copy[:, j]
                 sorted_column = np.sort(column[column != np.inf])  # trier les coûts qui ne sont pas infinis
-                print("Sorted column")
-                print(sorted_column)
+                """print("Sorted column")
+                print(sorted_column)"""
                 if (len(sorted_column)) != 0:
                     if len(sorted_column) >= 2:
                         penalty = sorted_column[1] - sorted_column[0]  # calculer la différence entre les deux plus petits coûts
@@ -114,27 +116,19 @@ class BalasHammer:
                     if self.solution[i][column_index] == None:
                         self.solution[i][column_index] = 0
                     cost_copy[i][column_index] = np.inf
-
-
-
+            """
             print("Cost copie")
             print(cost_copy)
             print("Solution actuelle")
-            print(self.solution)
-        print("Solution actuelle")
-        print(self.solution)
+            print(self.solution)"""
+
+        """print("Solution actuelle")
+        print(self.solution)"""
+
+    def display_solution(self):
+        self.tableau.display_matrix(self.solution, "Solution Balas-Hammer")
 
 
-
-
-
-    def find_initial_solution(self):
-        # Implémentation de l'algorithme Balas-Hammer pour trouver la solution initiale
-        # Cette implémentation est hypothétique et doit être adaptée à vos besoins spécifiques
-        self.corner_north_west()
-        print("Solution initiale trouvée en utilisant Balas-Hammer:")
-        self.display_matrix_tabulate(self.solution, "Solution Balas-Hammer")
-        self.display_matrix_brackets(self.solution, "Solution Balas-Hammer")
 
     def corner_north_west(self):
         # Implémentation simplifiée de l'angle nord-ouest
@@ -160,11 +154,4 @@ class BalasHammer:
 
     def execute(self):
         self.select_and_adjust()
-        # Vérification que toute l'offre et la demande ont été complètement utilisées
-        if not np.all(self.tableau.offres == 0) or not np.all(self.tableau.demandes == 0):
-            print("Erreur: Toute l'offre ou la demande n'a pas été complètement utilisée.")
-        print("Solution finale:")
-        self.display_matrix_tabulate(self.solution, "Solution Balas-Hammer")
-        total_cost = np.sum(self.solution * self.tableau.couts)
-        print("Coût total de la solution:", total_cost)
-        self.tableau.check_supply_demand()
+        self.display_solution()

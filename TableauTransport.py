@@ -58,17 +58,3 @@ class TransportTableau:
                 total_cost += self.solution[i, j] * self.couts[i, j]
         return total_cost
 
-    def check_supply_demand(self):
-        supply_used = self.solution.sum(axis=1)
-        demand_met = self.solution.sum(axis=0)
-
-        if np.any(supply_used != self.offres):
-            print(f"Erreur : L'offre utilisée {supply_used} ne correspond pas à l'offre disponible {self.offres}.")
-        else:
-            print("Toute l'offre est utilisée correctement.")
-
-        if np.any(demand_met != self.demandes):
-            print(
-                f"Erreur : La demande satisfaite {demand_met} ne correspond pas à la demande nécessaire {self.demandes}.")
-        else:
-            print("Toute la demande est satisfaite correctement.")
